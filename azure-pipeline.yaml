@@ -1,0 +1,159 @@
+trigger: none
+pr: none
+
+
+pool:
+  vmImage: "windows-latest"
+
+stages :
+- stage: validate
+  displayName: 'Terraform Validate'
+  jobs:
+  - job: validate
+    displayName: 'Terraform Validate'
+    continueOnError: false
+    steps:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        displayName: install terraform
+        inputs:
+          terraformVersion: 1.2.4
+
+      - task: TerraformCLI@0
+        displayName: 'check terraform version'
+        inputs:
+          command: version
+
+      - task: TerraformCLI@0
+        displayName: 'Terraform Validate'
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+
+      - task: TerraformCLI@0
+        displayName: 'terraform init'
+        inputs:
+          command: init
+          backendType: azurerm
+          workingDirectory: $(System.DefaultWorkingDirectory)/prods/prod
+          # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+          backendServiceArm: 'cloudreach_sc'
+          # Subscription id of the target backend. This can be used to specify the subscription when using Management Group scoped
+          # Service connection or to override the subscription id defined in a Subscription scoped service connection
+          # backendAzureRmSubscriptionId: 'my-backend-subscription-id'
+          # create backend storage account if doesn't exist
+          ensureBackend: true
+          backendAzureRmResourceGroupName: 'terraformstate'
+          # azure location shortname of the backend resource group and storage account
+          backendAzureRmResourceGroupLocation: 'eastus'
+          backendAzureRmStorageAccountName: 'clrhprdterraformstate'
+          # azure storage account sku, used when creating the storage account
+          backendAzureRmStorageAccountSku: 'Standard_RAGRS'
+          # azure blob container to store the state file
+          backendAzureRmContainerName: 'terraformstate'
+          # azure blob file name
+          backendAzureRmKey: infrax.tfstate
+
+- stage: plan
+  displayName: 'Terraform Plan'
+  dependsOn: [validate]
+  condition: succeeded('validate')
+  jobs:
+  - job: plan
+    displayName: 'Terraform Plan'
+    continueOnError: false
+    steps:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        displayName: install terraform
+        inputs:
+          terraformVersion: 1.2.4
+
+      - task: TerraformCLI@0
+        displayName: 'terraform init'
+        inputs:
+          command: init
+          backendType: azurerm
+          workingDirectory: $(System.DefaultWorkingDirectory)/prods/prod
+          # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+          backendServiceArm: 'cloudreach_sc'
+          # Subscription id of the target backend. This can be used to specify the subscription when using Management Group scoped
+          # Service connection or to override the subscription id defined in a Subscription scoped service connection
+          # backendAzureRmSubscriptionId: 'my-backend-subscription-id'
+          # create backend storage account if doesn't exist
+          ensureBackend: true
+          backendAzureRmResourceGroupName: 'terraformstate'
+          # azure location shortname of the backend resource group and storage account
+          backendAzureRmResourceGroupLocation: 'eastus'
+          backendAzureRmStorageAccountName: 'clrhprdterraformstate'
+          # azure storage account sku, used when creating the storage account
+          backendAzureRmStorageAccountSku: 'Standard_RAGRS'
+          # azure blob container to store the state file
+          backendAzureRmContainerName: 'terraformstate'
+          # azure blob file name
+          backendAzureRmKey: infrax.tfstate
+
+      - task: TerraformCLI@0
+        displayName: 'Terraform : plan'
+        inputs:
+          command: plan
+          workingDirectory: $(System.DefaultWorkingDirectory)/prods/prod
+          publishPlanResults: 'cloudreach_sc'
+          environmentServiceName: 'cloudreach_sc'
+          commandOptions: '-out=$(System.DefaultWorkingDirectory)/terraform.tfplan -detailed-exitcode'
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: $(System.DefaultWorkingDirectory)/terraform.tfplan
+          artifactName: TFPlan
+
+- stage: apply
+  displayName: 'Terraform Apply'
+  dependsOn: [plan]
+  condition: succeeded('plan')
+  jobs:
+  - job: apply
+    displayName: 'Terraform Apply'
+    continueOnError: true
+    steps:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+        displayName: install terraform
+        inputs:
+          terraformVersion: 1.2.4
+
+      - task: TerraformCLI@0
+        displayName: 'terraform init'
+        inputs:
+          command: init
+          backendType: azurerm
+          workingDirectory: $(System.DefaultWorkingDirectory)/prods/prod
+          # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+          backendServiceArm: 'cloudreach_sc'
+          # Subscription id of the target backend. This can be used to specify the subscription when using Management Group scoped
+          # Service connection or to override the subscription id defined in a Subscription scoped service connection
+          # backendAzureRmSubscriptionId: 'my-backend-subscription-id'
+          # create backend storage account if doesn't exist
+          ensureBackend: true
+          backendAzureRmResourceGroupName: 'terraformstate'
+          # azure location shortname of the backend resource group and storage account
+          backendAzureRmResourceGroupLocation: 'eastus'
+          backendAzureRmStorageAccountName: 'clrhprdterraformstate'
+          # azure storage account sku, used when creating the storage account
+          backendAzureRmStorageAccountSku: 'Standard_RAGRS'
+          # azure blob container to store the state file
+          backendAzureRmContainerName: 'terraformstate'
+          # azure blob file name
+          backendAzureRmKey: infrax.tfstate
+
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          source: current
+          artifact: TFPlan
+          path: $(System.DefaultWorkingDirectory)
+
+
+      - task: TerraformCLI@0
+        displayName: 'Terraform : apply'
+        inputs:
+          command: apply
+          workingDirectory: $(System.DefaultWorkingDirectory)/prods/prod
+          commandOptions: '$(System.DefaultWorkingDirectory)/terraform.tfplan'
+          environmentServiceName: 'cloudreach_sc'
