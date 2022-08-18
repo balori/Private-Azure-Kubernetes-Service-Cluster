@@ -7,7 +7,7 @@ Insurance company is one of the leading cloud consulting business and has assist
 
 
 # Who is our UAE Client?
-![UAE_Client](images/uae_client.PNG)
+![UAE_Client](images/uae_client.png)
 UAE Client is an insurance company and long standing Insurance company customer,
 having successfully integrated Insurance company engineering teams with
 their own in-house cloud resources to execute on key initiatives,
