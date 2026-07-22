@@ -95,6 +95,27 @@ The architecture is composed of the following elements:
 - A Virtual Network Link between each Private DNS Zone and both the hub and spoke virtual networks
 - A Log Analytics workspace to collect the diagnostics logs and metrics of both the AKS cluster and Vm virtual machine.
 
+# Architecture at a glance
+
+| Concern | Choice |
+|---------|--------|
+| Cluster | Private AKS (`private_cluster_enabled = true`), separate system + user node pools |
+| Network | Hub-and-spoke VNets, peered; nodes have no public IP |
+| Egress | Azure Firewall via `outbound_type = userDefinedRouting` + route table (inspected, logged) |
+| Access | Jumpbox VM reached through Azure Bastion over peering |
+| PaaS connectivity | Private endpoints + private DNS zones for ACR, Key Vault, Blob, PostgreSQL |
+| Ingress | Application Gateway Ingress Controller (AGIC), L7, WAF-ready |
+| Identity | AAD-integrated RBAC + user-assigned managed identities; SSH keys generated into Key Vault |
+| Observability | Log Analytics + AKS control-plane diagnostic settings |
+| IaC | 17 reusable Terraform modules composed in `prods/prod`; Azure DevOps pipeline |
+
+# Architecture decisions
+
+The significant design choices — the private-cluster access model, firewall
+egress, private endpoints + DNS, AGIC ingress, and AAD-RBAC with managed
+identities — are recorded with their alternatives and trade-offs in
+[`docs/adr/`](docs/adr/).
+
 # Infrastructure Deployment
 
 The terraform codes could be used to deploy the infrastructure in numerous ways. However, we highlight two tested methods for infrastructure deployment.
