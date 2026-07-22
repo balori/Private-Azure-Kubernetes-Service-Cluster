@@ -1,15 +1,14 @@
-# Insurance company Repository for creating a private Azure Kubernetes Service Cluster for a UAE Clients
+# ABC Repository for creating a private Azure Kubernetes Service Cluster for a UAE Clients
 
-# Who is Insurance company?
-![omar](images/insurance_company_logo.png)
+# Who is ABC?
 
-Insurance company is one of the leading cloud consulting business and has assisted several companies worldwide to move into the cloud and DevOps space utilizing best practices from all top cloud providers from Microsoft Azure, Amazon, GCP and IBM.
+ABC is one of the leading cloud consulting business and has assisted several companies worldwide to move into the cloud and DevOps space utilizing best practices from all top cloud providers from Microsoft Azure, Amazon, GCP and IBM.
 
 
 # Who is our UAE Client?
 ![UAE_Client](images/uae_client.png)
-UAE Client is an insurance company and long standing Insurance company customer,
-having successfully integrated Insurance company engineering teams with
+UAE Client is an insurance company and long standing ABC customer,
+having successfully integrated ABC engineering teams with
 their own in-house cloud resources to execute on key initiatives,
 tactical backlog execution and strategic cloud projects.
 One of these key initiatives is establishing a managed container
@@ -18,7 +17,7 @@ platform service.
 # Business Justification
 UAE Client recognises that by adopting a multi-cloud strategy, to include
 support for containerised applications, additional specialist cloud
-platform skills will be required. They wish **Insurance company's Team** to help them
+platform skills will be required. They wish **ABC's Team** to help them
 utilise containers as part of as an enabler for their overall DevOps
 and Modernisation strategy.
 As part of this strategy, the insurance company wishes to
@@ -28,7 +27,7 @@ solution for their container infrastructure.
 
 # Proposed Solution
 
-Insurance company's team will assist to provision cloud based infrastructure to create a managed container solution using an Infrastructure as Code (Iac) approach.
+ABC's team will assist to provision cloud based infrastructure to create a managed container solution using an Infrastructure as Code (Iac) approach.
 
 The IaC solution should allow provisioning of one small orchestrated
 cluster of containers from a managed container registry of your
